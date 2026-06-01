@@ -9,6 +9,7 @@
 - **真实卡牌图片** - 使用韦特塔罗牌 (Rider-Waite) 公共领域图片
 - **智能抽牌算法** - 基于宇宙能量计算抽取三张牌
 - **AI 解读** - 使用 Deepseek API 生成诗意解读
+- **实时流式输出** - WebSocket 连接，打字机效果逐字显示解读
 - **精美动画** - 星空背景、粒子效果、翻牌动画
 - **响应式设计** - 完美适配各种设备
 
@@ -76,9 +77,9 @@ uv run python main.py
 ## 技术栈
 
 - **包管理**: UV
-- **后端**: FastAPI + Uvicorn
+- **后端**: FastAPI + Uvicorn + WebSocket
 - **前端**: HTML5 + CSS3 + Vanilla JavaScript
-- **AI**: Deepseek API (V4 Pro 非推理模式)
+- **AI**: Deepseek API (V4 Pro 非推理模式) 流式输出
 - **图片资源**: GitHub 托管的韦特塔罗牌公共领域图片
 
 ## 项目结构
