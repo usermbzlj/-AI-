@@ -403,6 +403,23 @@
             color: rgba(255, 255, 255, 0.9);
             white-space: pre-wrap;
             text-align: left;
+            max-height: 400px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 215, 0, 0.3) transparent;
+        }
+
+        .interpretation-text::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .interpretation-text::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .interpretation-text::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.3);
+            border-radius: 3px;
         }
 
         /* ==================== 加载动画 ==================== */
@@ -614,6 +631,7 @@
         let cosmicEnergy = 0;
         let isRolling = true;
         let rollingInterval = null;
+        let ws = null;
 
         // ==================== 初始化星空 ====================
         function createStars() {
@@ -679,42 +697,57 @@
             document.getElementById('interpretationSection').style.display = 'none';
             document.getElementById('restartSection').style.display = 'none';
 
-            try {
-                // 调用后端 API
-                const response = await fetch('/api/reading', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        cosmic_energy: cosmicEnergy
-                    })
-                });
+            // 清空解读文本
+            document.getElementById('interpretationText').textContent = '';
 
-                if (!response.ok) {
-                    throw new Error('占卜失败');
+            // 建立WebSocket连接
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/reading`);
+
+            ws.onopen = () => {
+                // 发送宇宙能量
+                ws.send(JSON.stringify({ cosmic_energy: cosmicEnergy }));
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'cards') {
+                    // 收到牌的数据，隐藏加载动画，显示牌
+                    document.getElementById('loading').style.display = 'none';
+                    displayCards(data.cards);
+                    // 显示解读区域（准备接收流式内容）
+                    document.getElementById('interpretationSection').style.display = 'block';
                 }
+                else if (data.type === 'chunk') {
+                    // 追加解读文本（打字机效果）
+                    const textEl = document.getElementById('interpretationText');
+                    textEl.textContent += data.content;
+                    // 自动滚动到底部
+                    textEl.scrollTop = textEl.scrollHeight;
+                }
+                else if (data.type === 'done') {
+                    // 生成完成，显示再来一次按钮
+                    document.getElementById('restartSection').style.display = 'block';
+                    ws.close();
+                }
+                else if (data.type === 'error') {
+                    console.error('服务器错误:', data.message);
+                    alert('占卜过程中出现错误，请稍后再试');
+                    resetReading();
+                }
+            };
 
-                const data = await response.json();
-
-                // 隐藏加载动画
+            ws.onerror = (error) => {
+                console.error('WebSocket错误:', error);
                 document.getElementById('loading').style.display = 'none';
-
-                // 显示塔罗牌
-                displayCards(data.cards);
-
-                // 显示解读
-                displayInterpretation(data.interpretation);
-
-                // 显示再来一次按钮
-                document.getElementById('restartSection').style.display = 'block';
-
-            } catch (error) {
-                console.error('占卜错误:', error);
-                document.getElementById('loading').style.display = 'none';
-                alert('占卜过程中出现错误，请稍后再试');
+                alert('连接失败，请稍后再试');
                 resetReading();
-            }
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket连接关闭');
+            };
         }
 
         // ==================== 显示塔罗牌 ====================
@@ -800,6 +833,12 @@
 
         // ==================== 重置占卜 ====================
         function resetReading() {
+            // 关闭WebSocket连接
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+
             // 重新开始滚动
             isRolling = true;
             const startBtn = document.getElementById('startBtn');

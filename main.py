@@ -3,8 +3,9 @@
 """
 import os
 import random
+import json
 from typing import Optional
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -251,6 +252,133 @@ async def create_reading(request: ReadingRequest):
         cards=drawn_cards,
         interpretation=interpretation,
     )
+
+@app.websocket("/ws/reading")
+async def websocket_reading(websocket: WebSocket):
+    """WebSocket实时占卜"""
+    await websocket.accept()
+
+    try:
+        # 接收宇宙能量
+        data = await websocket.receive_text()
+        request = json.loads(data)
+        cosmic_energy = request.get("cosmic_energy", 0)
+
+        # 生成牌
+        seed = cosmic_energy % 78
+        card_indices = [
+            seed,
+            (seed + cosmic_energy % 22 + 7) % 78,
+            (seed + cosmic_energy % 56 + 13) % 78,
+        ]
+
+        seen = set()
+        unique_indices = []
+        for idx in card_indices:
+            while idx in seen:
+                idx = (idx + 1) % 78
+            seen.add(idx)
+            unique_indices.append(idx)
+
+        drawn_cards = []
+        for i, idx in enumerate(unique_indices):
+            card = ALL_CARDS[idx]
+            is_reversed = (cosmic_energy // (10 ** i)) % 2 == 1
+            drawn_cards.append(CardReading(
+                card_id=card["id"],
+                card_name=card["name"],
+                card_english=card["english"],
+                image=card["image"],
+                is_reversed=is_reversed,
+                keywords=card["keywords"],
+            ))
+
+        # 先发送牌的数据
+        cards_data = [card.model_dump() for card in drawn_cards]
+        await websocket.send_json({"type": "cards", "cards": cards_data})
+
+        # 流式生成解读
+        api_key = os.getenv("OPENAI_API_KEY")
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.deepseek.com")
+        model = os.getenv("MODEL_NAME", "deepseek-chat")
+
+        if not api_key or api_key == "your_deepseek_api_key_here":
+            # 本地生成
+            interpretation = generate_local_interpretation(cosmic_energy, drawn_cards)
+            await websocket.send_json({"type": "chunk", "content": interpretation})
+        else:
+            # 流式调用LLM
+            await stream_interpretation(websocket, cosmic_energy, drawn_cards, api_key, base_url, model)
+
+        await websocket.send_json({"type": "done"})
+
+    except WebSocketDisconnect:
+        print("客户端断开连接")
+    except Exception as e:
+        print(f"WebSocket错误: {e}")
+        try:
+            await websocket.send_json({"type": "error", "message": str(e)})
+        except:
+            pass
+
+
+async def stream_interpretation(
+    websocket: WebSocket,
+    cosmic_energy: int,
+    cards: list[CardReading],
+    api_key: str,
+    base_url: str,
+    model: str
+):
+    """流式生成塔罗牌解读"""
+    client = openai.AsyncOpenAI(api_key=api_key, base_url=base_url)
+
+    cards_desc = []
+    for i, card in enumerate(cards):
+        position = ["过去", "现在", "未来"][i]
+        orientation = "逆位" if card.is_reversed else "正位"
+        cards_desc.append(f"{position}位置：{card.card_name}（{card.card_english}）{orientation}，关键词：{', '.join(card.keywords)}")
+
+    prompt = f"""你是一位神秘而富有智慧的塔罗牌占卜师。请根据以下三张牌为求问者提供一段富有诗意和启发性的解读。
+
+宇宙能量：{cosmic_energy}
+
+抽取的三张牌：
+{chr(10).join(cards_desc)}
+
+要求：
+1. 用温柔、神秘的语气
+2. 结合三张牌的位置关系（过去、现在、未来）进行连贯解读
+3. 提供积极正面的建议和启发
+4. 适当加入一些诗意的表达
+5. 长度控制在200-300字
+6. 这是娱乐性质的占卜，请在结尾温馨提醒
+
+请开始你的解读："""
+
+    try:
+        stream = await client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "你是一位来自星空的塔罗牌占卜师，拥有千年的智慧。你用诗意而温暖的语言为人们解读命运的密码。记住，这只是一个轻松愉快的娱乐占卜，不是真正的预测未来。"},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.8,
+            max_tokens=500,
+            stream=True,
+        )
+
+        async for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content:
+                content = chunk.choices[0].delta.content
+                await websocket.send_json({"type": "chunk", "content": content})
+
+    except Exception as e:
+        print(f"流式生成失败: {e}")
+        # 回退到本地生成
+        interpretation = generate_local_interpretation(cosmic_energy, cards)
+        await websocket.send_json({"type": "chunk", "content": interpretation})
+
 
 async def generate_interpretation(cosmic_energy: int, cards: list[CardReading]) -> str:
     """使用 OpenAI 兼容 API 生成塔罗牌解读"""
