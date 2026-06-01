@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神秘塔罗 - 宇宙能量占卜</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==================== 基础样式 ==================== */
+        :root {
+            --cosmic-purple: #1a0a2e;
+            --mystic-blue: #16213e;
+            --star-gold: #ffd700;
+            --crystal-pink: #ff6b9d;
+            --ethereal-cyan: #00d4ff;
+            --moon-silver: #c0c0c0;
+            --deep-violet: #4a0e8f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(135deg, var(--cosmic-purple) 0%, var(--mystic-blue) 50%, #0a0a2e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ==================== 星空背景 ==================== */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle var(--duration) infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* ==================== 主容器 ==================== */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* ==================== 标题区域 ==================== */
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header h1 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 3.5rem;
+            background: linear-gradient(135deg, var(--star-gold), var(--crystal-pink), var(--ethereal-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            font-size: 1.2rem;
+            color: var(--moon-silver);
+            letter-spacing: 5px;
+        }
+
+        /* ==================== 宇宙能量显示 ==================== */
+        .cosmic-energy-section {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .cosmic-label {
+            font-size: 1.5rem;
+            color: var(--star-gold);
+            margin-bottom: 20px;
+            letter-spacing: 3px;
+        }
+
+        .cosmic-number {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--star-gold), #ffed4a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+            animation: pulseGlow 2s ease-in-out infinite;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        .cosmic-hint {
+            font-size: 0.9rem;
+            color: var(--moon-silver);
+            margin-top: 15px;
+            opacity: 0.7;
+        }
+
+        /* ==================== 开始按钮 ==================== */
+        .start-section {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .start-btn {
+            position: relative;
+            padding: 20px 60px;
+            font-size: 1.5rem;
+            font-family: 'Noto Serif SC', serif;
+            color: #fff;
+            background: linear-gradient(135deg, var(--deep-violet), #6b21a8);
+            border: 2px solid var(--star-gold);
+            border-radius: 50px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            letter-spacing: 3px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5), 0 0 60px rgba(74, 14, 143, 0.5);
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        .start-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: btnShine 3s infinite;
+        }
+
+        @keyframes btnShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .start-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ==================== 塔罗牌展示区 ==================== */
+        .cards-section {
+            display: none;
+            margin-bottom: 60px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+
+        .card-wrapper {
+            perspective: 1000px;
+        }
+
+        .tarot-card {
+            width: 220px;
+            height: 360px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .tarot-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .tarot-card.reversed {
+            transform: rotateY(180deg) rotate(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #1a0a2e, #2d1b69);
+            border: 3px solid var(--star-gold);
+        }
+
+        .card-back-pattern {
+            width: 85%;
+            height: 85%;
+            border: 2px solid var(--star-gold);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            opacity: 0.8;
+            background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(74,14,143,0.3));
+        }
+
+        .card-back-pattern::after {
+            content: '✦';
+            font-size: 5rem;
+            color: var(--star-gold);
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .card-front {
+            background: #f5f5f5;
+            transform: rotateY(180deg);
+            padding: 0;
+        }
+
+        .card-front.reversed-front {
+            transform: rotateY(180deg) rotate(180deg);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.9));
+            padding: 30px 15px 15px;
+            text-align: center;
+        }
+
+        .card-position {
+            font-size: 0.8rem;
+            color: var(--star-gold);
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #fff;
+            text-align: center;
+            margin-bottom: 3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .card-english {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 8px;
+        }
+
+        .card-orientation {
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 12px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .card-orientation.upright {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: #fff;
+        }
+
+        .card-orientation.reversed-orient {
+            background: linear-gradient(135deg, #f44336, #da190b);
+            color: #fff;
+        }
+
+        .card-keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+            margin-top: 8px;
+        }
+
+        .keyword-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: #fff;
+            backdrop-filter: blur(5px);
+        }
+
+        /* ==================== 牌阵位置标签 ==================== */
+        .position-labels {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .position-label {
+            text-align: center;
+            color: var(--star-gold);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .position-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ==================== 解读区域 ==================== */
+        .interpretation-section {
+            display: none;
+            text-align: center;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .interpretation-box {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .interpretation-title {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 1.8rem;
+            color: var(--star-gold);
+            margin-bottom: 30px;
+        }
+
+        .interpretation-text {
+            font-size: 1.1rem;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.9);
+            white-space: pre-wrap;
+            text-align: left;
+        }
+
+        /* ==================== 加载动画 ==================== */
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255, 215, 0, 0.1);
+            border-top: 3px solid var(--star-gold);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--star-gold);
+            font-size: 1.1rem;
+            animation: loadingPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes loadingPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* ==================== 再来一次按钮 ==================== */
+        .restart-section {
+            display: none;
+            text-align: center;
+            margin-top: 40px;
+            animation: fadeInUp 0.8s ease-out 0.6s both;
+        }
+
+        .restart-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-family: 'Noto Serif SC', serif;
+            color: var(--star-gold);
+            background: transparent;
+            border: 2px solid var(--star-gold);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+
+        .restart-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        /* ==================== 页脚 ==================== */
+        .footer {
+            text-align: center;
+            margin-top: 80px;
+            padding: 30px;
+            color: var(--moon-silver);
+            font-size: 0.9rem;
+            opacity: 0.5;
+        }
+
+        /* ==================== 响应式 ==================== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+
+            .cosmic-number {
+                font-size: 3.5rem;
+            }
+
+            .cards-container {
+                gap: 20px;
+            }
+
+            .tarot-card {
+                width: 160px;
+                height: 260px;
+            }
+
+            .card-name {
+                font-size: 0.9rem;
+            }
+
+            .interpretation-box {
+                padding: 25px;
+            }
+        }
+
+        /* ==================== 粒子效果 ==================== */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            animation: floatUp 3s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-200px) scale(0); }
+        }
+
+        /* ==================== 神秘光环 ==================== */
+        .mystical-glow {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+            animation: floatGlow 10s ease-in-out infinite;
+        }
+
+        @keyframes floatGlow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 星空背景 -->
+    <div class="stars" id="stars"></div>
+
+    <!-- 神秘光环 -->
+    <div class="mystical-glow" style="top: 30%; left: 20%;"></div>
+    <div class="mystical-glow" style="top: 60%; left: 80%; animation-delay: -5s;"></div>
+
+    <div class="container">
+        <!-- 标题 -->
+        <header class="header">
+            <h1>神秘塔罗</h1>
+            <div class="subtitle">宇 宙 能 量 占 卜</div>
+        </header>
+
+        <!-- 宇宙能量显示 -->
+        <section class="cosmic-energy-section">
+            <div class="cosmic-label">✦ 宇宙能量 ✦</div>
+            <div class="cosmic-number" id="cosmicNumber">----</div>
+            <div class="cosmic-hint">宇宙能量每 0.5 秒流转一次，等待你捕捉命运的瞬间...</div>
+        </section>
+
+        <!-- 开始按钮 -->
+        <section class="start-section">
+            <button class="start-btn" id="startBtn" onclick="startReading()">
+                开启命运之门
+            </button>
+        </section>
+
+        <!-- 加载动画 -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">宇宙正在为你编织命运之网...</div>
+        </div>
+
+        <!-- 塔罗牌展示区 -->
+        <section class="cards-section" id="cardsSection">
+            <div class="position-labels">
+                <div class="position-label">
+                    <span class="position-icon">🌙</span>
+                    过去
+                </div>
+                <div class="position-label">
+                    <span class="position-icon">⭐</span>
+                    现在
+                </div>
+                <div class="position-label">
+                    <span class="position-icon">☀️</span>
+                    未来
+                </div>
+            </div>
+            <div class="cards-container" id="cardsContainer"></div>
+        </section>
+
+        <!-- 解读区域 -->
+        <section class="interpretation-section" id="interpretationSection">
+            <div class="interpretation-box">
+                <h2 class="interpretation-title">✦ 命运解读 ✦</h2>
+                <div class="interpretation-text" id="interpretationText"></div>
+            </div>
+        </section>
+
+        <!-- 再来一次 -->
+        <section class="restart-section" id="restartSection">
+            <button class="restart-btn" onclick="resetReading()">
+                再次探索命运
+            </button>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            神秘塔罗 - 娱乐占卜<br>
+            <small>仅供娱乐放松，请理性看待</small>
+        </footer>
+    </div>
+
+    <script>
+        // ==================== 全局变量 ====================
+        let cosmicEnergy = 0;
+        let isRolling = true;
+        let rollingInterval = null;
+
+        // ==================== 初始化星空 ====================
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            const starCount = 200;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.width = `${Math.random() * 3 + 1}px`;
+                star.style.height = star.style.width;
+                star.style.setProperty('--duration', `${Math.random() * 3 + 2}s`);
+                star.style.animationDelay = `${Math.random() * 3}s`;
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // ==================== 宇宙能量滚动 ====================
+        function startRolling() {
+            const cosmicNumber = document.getElementById('cosmicNumber');
+
+            rollingInterval = setInterval(() => {
+                if (isRolling) {
+                    cosmicEnergy = Math.floor(Math.random() * 10000);
+                    cosmicNumber.textContent = cosmicEnergy.toString().padStart(4, '0');
+                }
+            }, 500);
+        }
+
+        // ==================== 创建粒子效果 ====================
+        function createParticles(x, y, count = 20) {
+            for (let i = 0; i < count; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = `${x}px`;
+                particle.style.top = `${y}px`;
+                particle.style.width = `${Math.random() * 10 + 5}px`;
+                particle.style.height = particle.style.width;
+                particle.style.background = `hsl(${Math.random() * 60 + 30}, 100%, 70%)`;
+                document.body.appendChild(particle);
+
+                setTimeout(() => particle.remove(), 3000);
+            }
+        }
+
+        // ==================== 开始占卜 ====================
+        async function startReading() {
+            const startBtn = document.getElementById('startBtn');
+
+            // 停止滚动
+            isRolling = false;
+            startBtn.disabled = true;
+
+            // 创建粒子效果
+            const rect = startBtn.getBoundingClientRect();
+            createParticles(rect.left + rect.width / 2, rect.top + rect.height / 2, 30);
+
+            // 显示加载动画
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('cardsSection').style.display = 'none';
+            document.getElementById('interpretationSection').style.display = 'none';
+            document.getElementById('restartSection').style.display = 'none';
+
+            try {
+                // 调用后端 API
+                const response = await fetch('/api/reading', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        cosmic_energy: cosmicEnergy
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('占卜失败');
+                }
+
+                const data = await response.json();
+
+                // 隐藏加载动画
+                document.getElementById('loading').style.display = 'none';
+
+                // 显示塔罗牌
+                displayCards(data.cards);
+
+                // 显示解读
+                displayInterpretation(data.interpretation);
+
+                // 显示再来一次按钮
+                document.getElementById('restartSection').style.display = 'block';
+
+            } catch (error) {
+                console.error('占卜错误:', error);
+                document.getElementById('loading').style.display = 'none';
+                alert('占卜过程中出现错误，请稍后再试');
+                resetReading();
+            }
+        }
+
+        // ==================== 显示塔罗牌 ====================
+        function displayCards(cards) {
+            const container = document.getElementById('cardsContainer');
+            const cardsSection = document.getElementById('cardsSection');
+            container.innerHTML = '';
+
+            const positions = ['过去', '现在', '未来'];
+
+            cards.forEach((card, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'card-wrapper';
+
+                const tarotCard = document.createElement('div');
+                tarotCard.className = 'tarot-card';
+
+                // 牌背
+                const cardBack = document.createElement('div');
+                cardBack.className = 'card-face card-back';
+                cardBack.innerHTML = '<div class="card-back-pattern"></div>';
+
+                // 牌面
+                const cardFront = document.createElement('div');
+                const isReversed = card.is_reversed;
+                cardFront.className = `card-face card-front ${isReversed ? 'reversed-front' : ''}`;
+
+                const orientationClass = isReversed ? 'reversed-orient' : 'upright';
+                const orientationText = isReversed ? '逆位' : '正位';
+
+                let keywordsHtml = '';
+                if (card.keywords && card.keywords.length > 0) {
+                    keywordsHtml = '<div class="card-keywords">';
+                    card.keywords.slice(0, 3).forEach(kw => {
+                        keywordsHtml += `<span class="keyword-tag">${kw}</span>`;
+                    });
+                    keywordsHtml += '</div>';
+                }
+
+                cardFront.innerHTML = `
+                    <img class="card-image" src="${card.image}" alt="${card.card_name}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22220%22 height=%22360%22><rect width=%22220%22 height=%22360%22 fill=%22%231a0a2e%22/><text x=%22110%22 y=%22180%22 text-anchor=%22middle%22 fill=%22%23ffd700%22 font-size=%2224%22>${card.card_name}</text></svg>'">
+                    <div class="card-overlay">
+                        <div class="card-position">${positions[index]}</div>
+                        <div class="card-name">${card.card_name}</div>
+                        <div class="card-english">${card.card_english}</div>
+                        ${keywordsHtml}
+                        <div class="card-orientation ${orientationClass}">${orientationText}</div>
+                    </div>
+                `;
+
+                tarotCard.appendChild(cardBack);
+                tarotCard.appendChild(cardFront);
+                wrapper.appendChild(tarotCard);
+                container.appendChild(wrapper);
+
+                // 延迟翻牌动画
+                setTimeout(() => {
+                    if (isReversed) {
+                        tarotCard.classList.add('reversed');
+                    } else {
+                        tarotCard.classList.add('flipped');
+                    }
+                }, 500 + index * 400);
+            });
+
+            cardsSection.style.display = 'block';
+
+            // 创建粒子效果
+            setTimeout(() => {
+                const rect = cardsSection.getBoundingClientRect();
+                createParticles(rect.left + rect.width / 2, rect.top, 40);
+            }, 2000);
+        }
+
+        // ==================== 显示解读 ====================
+        function displayInterpretation(interpretation) {
+            const section = document.getElementById('interpretationSection');
+            const text = document.getElementById('interpretationText');
+
+            text.textContent = interpretation;
+            section.style.display = 'block';
+        }
+
+        // ==================== 重置占卜 ====================
+        function resetReading() {
+            // 重新开始滚动
+            isRolling = true;
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = false;
+
+            // 隐藏所有结果
+            document.getElementById('cardsSection').style.display = 'none';
+            document.getElementById('interpretationSection').style.display = 'none';
+            document.getElementById('restartSection').style.display = 'none';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            startRolling();
+        });
+    </script>
+</body>
+</html>
