@@ -4,8 +4,9 @@
 import os
 import random
 import json
+import time
 from typing import Optional
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -16,6 +17,10 @@ import openai
 load_dotenv()
 
 app = FastAPI(title="塔罗牌占卜", version="1.0.0")
+
+# ==================== 频率限制 ====================
+rate_limit_store = {}  # ip -> last_request_time
+RATE_LIMIT_SECONDS = 10  # 每个IP每10秒只能请求一次
 
 # 静态文件
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -208,8 +213,16 @@ async def get_all_cards():
     return {"cards": ALL_CARDS}
 
 @app.post("/api/reading", response_model=ReadingResponse)
-async def create_reading(request: ReadingRequest):
+async def create_reading(request: ReadingRequest, request_obj: Request):
     """创建塔罗牌占卜"""
+    # 频率限制
+    client_ip = request_obj.client.host
+    current_time = time.time()
+    if client_ip in rate_limit_store:
+        elapsed = current_time - rate_limit_store[client_ip]
+        if elapsed < RATE_LIMIT_SECONDS:
+            raise HTTPException(status_code=429, detail=f"请求太频繁，请{int(RATE_LIMIT_SECONDS - elapsed)}秒后再试")
+    rate_limit_store[client_ip] = current_time
     cosmic_energy = request.cosmic_energy
 
     # 使用宇宙能量计算三张牌
@@ -259,6 +272,16 @@ async def websocket_reading(websocket: WebSocket):
     await websocket.accept()
 
     try:
+        # 频率限制
+        client_ip = websocket.client.host
+        current_time = time.time()
+        if client_ip in rate_limit_store:
+            elapsed = current_time - rate_limit_store[client_ip]
+            if elapsed < RATE_LIMIT_SECONDS:
+                await websocket.send_json({"type": "error", "message": f"请求太频繁，请{int(RATE_LIMIT_SECONDS - elapsed)}秒后再试"})
+                await websocket.close()
+                return
+        rate_limit_store[client_ip] = current_time
         # 接收宇宙能量
         data = await websocket.receive_text()
         request = json.loads(data)
