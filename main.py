@@ -392,6 +392,10 @@ async def stream_interpretation(
         )
 
         async for chunk in stream:
+            # 检查WebSocket是否还连接
+            if websocket.client_state.value != 1:  # 1 = CONNECTED
+                print("WebSocket已断开，停止生成")
+                break
             if chunk.choices and chunk.choices[0].delta.content:
                 content = chunk.choices[0].delta.content
                 await websocket.send_json({"type": "chunk", "content": content})

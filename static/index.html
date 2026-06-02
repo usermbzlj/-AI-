@@ -633,6 +633,14 @@
         let rollingInterval = null;
         let ws = null;
 
+        // 页面关闭时断开WebSocket
+        window.addEventListener('beforeunload', () => {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        });
+
         // ==================== 初始化星空 ====================
         function createStars() {
             const starsContainer = document.getElementById('stars');
